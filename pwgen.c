@@ -15,6 +15,7 @@
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
 #endif
+#include <assert.h>
 
 #include "pwgen.h"
 
@@ -42,11 +43,12 @@ struct option pwgen_options[] = {
 	{ "sha1", required_argument, 0, 'H' },
 	{ "ambiguous", no_argument, 0, 'B' },
 	{ "no-vowels", no_argument, 0, 'v' },
+	{ "debug", no_argument, 0, 'D' },
 	{ 0, 0, 0, 0}
 };
 #endif
 
-const char *pw_options = "01AaBCcnN:shH:vy";
+const char *pw_options = "01AaBCcnN:shH:vyD";
 
 static void usage(void)
 {
@@ -82,6 +84,8 @@ static void usage(void)
 	fputs("  -v or --no-vowels\n", stderr);
 	fputs("\tDo not use any vowels so as to avoid accidental nasty words\n",
 	      stderr);
+	fputs("  -D\n\tDebug output - print the random path and amount of entropy requested\n",
+	      stderr);
 	exit(1);
 }
 
@@ -91,6 +95,7 @@ int main(int argc, char **argv)
 	int	term_width = 80;
 	int	c, i;
 	int	num_cols = -1;
+	int	debug = 0;
 	char	*buf, *tmp;
 	void	(*pwgen)(char *inbuf, int size, int pw_flags);
 
@@ -157,6 +162,9 @@ int main(int argc, char **argv)
 			pwgen = pw_rand;
 			pwgen_flags |= PW_NO_VOWELS | PW_DIGITS | PW_UPPERS;
 			break;
+		case 'D':
+			debug = 1;
+			break;
 		case 'h':
 		case '?':
 			usage();
@@ -203,7 +211,17 @@ int main(int argc, char **argv)
 	}
 	for (i=0; i < num_pw; i++) {
 		pwgen(buf, pw_length, pwgen_flags);
-		if (!do_columns || ((i % num_cols) == (num_cols-1)))
+		if (debug) {
+			int rand_steps = get_num_rand_steps();
+			int j;
+
+			assert(rand_steps > 0);
+			printf("%s\t%.18Lg\t", buf, get_probability());
+			for(j = 0; j < rand_steps-1; j++) {
+				printf("%d,", get_rand_step(j));
+			}
+			printf("%d\n", get_rand_step(rand_steps-1));
+		} else if (!do_columns || ((i % num_cols) == (num_cols-1)))
 			printf("%s\n", buf);
 		else
 			printf("%s ", buf);

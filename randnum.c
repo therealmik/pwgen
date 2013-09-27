@@ -14,6 +14,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <assert.h>
 
 #include "pwgen.h"
 
@@ -54,6 +55,34 @@ static int get_random_fd()
 	return fd;
 }
 
+
+static long double probability;
+static int num_rand_steps;
+static int rand_path[65536];
+
+extern void new_password(void)
+{
+	probability = 1.0;
+	num_rand_steps = 0;
+}
+
+extern long double get_probability(void)
+{
+	return probability;
+}
+
+extern int get_num_rand_steps(void)
+{
+	return num_rand_steps;
+}
+
+extern int get_rand_step(int num)
+{
+	assert(num >= 0);
+	assert(num < num_rand_steps);
+	return rand_path[num];
+}
+
 /*
  * Generate a random number n, where 0 <= n < max_num, using
  * /dev/urandom if possible.
@@ -65,6 +94,9 @@ int pw_random_number(max_num)
 	int lose_counter = 0, nbytes=4;
 	unsigned int rand_num;
 	char *cp = (char *) &rand_num;
+	int ret;
+
+	probability *= 1.0 / (max_num+1);
 
 	if (fd >= 0) {
 		while (nbytes > 0) {
@@ -82,14 +114,19 @@ int pw_random_number(max_num)
 			lose_counter = 0;
 		}
 	}
-	if (nbytes == 0)
-		return (rand_num % max_num);
+	if (nbytes == 0) {
+		ret = (rand_num % max_num);
+		rand_path[num_rand_steps++] = ret;
+		return ret;
+	}
 
 	/* OK, we weren't able to use /dev/random, fall back to rand/rand48 */
 
 #ifdef HAVE_DRAND48
-	return ((int) ((drand48() * max_num)));
+	ret = ((int) ((drand48() * max_num)));
 #else
-	return ((int) (random() / ((float) RAND_MAX) * max_num));
+	ret = ((int) (random() / ((float) RAND_MAX) * max_num));
 #endif
+	rand_path[num_rand_steps++] = ret;
+	return ret;
 }

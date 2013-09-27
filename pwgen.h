@@ -45,6 +45,10 @@ extern void pw_rand(char *buf, int size, int pw_flags);
 
 /* randnum.c */
 extern int pw_random_number(int max_num);
+extern void new_password(void);
+extern long double get_probability(void);
+extern int get_num_rand_steps(void);
+extern int get_rand_step(int num);
 
 /* sha1num.c */
 extern void pw_sha1_init(char *sha1);

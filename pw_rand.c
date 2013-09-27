@@ -56,6 +56,7 @@ void pw_rand(char *buf, int size, int pw_flags)
 		strcpy(wchars, pw_symbols);
 	}
 try_again:
+	new_password();
 	len = strlen(chars);
 	feature_flags = pw_flags;
 	i = 0;

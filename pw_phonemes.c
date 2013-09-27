@@ -64,6 +64,7 @@ void pw_phonemes(char *buf, int size, int pw_flags)
 	char		ch, *cp;
 
 try_again:
+	new_password();
 	feature_flags = pw_flags;
 	c = 0;
 	prev = 0;
