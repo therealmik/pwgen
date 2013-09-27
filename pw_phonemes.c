@@ -110,7 +110,8 @@ try_again:
 			    (pw_number(10) < 2)) {
 				buf[c] = toupper(buf[c]);
 				feature_flags &= ~PW_UPPERS;
-			}
+			} else
+				feature_flags &= ~PW_LOWERS;
 		}
 		
 		c += len;

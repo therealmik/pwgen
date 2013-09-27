@@ -42,11 +42,13 @@ struct option pwgen_options[] = {
 	{ "sha1", required_argument, 0, 'H' },
 	{ "ambiguous", no_argument, 0, 'B' },
 	{ "no-vowels", no_argument, 0, 'v' },
+	{ "insecure-phonemes", no_argument, 0, 'P' },
+	{ "no-lowers", no_argument, 0, 'L' },
 	{ 0, 0, 0, 0}
 };
 #endif
 
-const char *pw_options = "01AaBCcnN:shH:vy";
+const char *pw_options = "01AaBCcnN:shH:vyPL";
 
 static void usage(void)
 {
@@ -82,6 +84,12 @@ static void usage(void)
 	fputs("  -v or --no-vowels\n", stderr);
 	fputs("\tDo not use any vowels so as to avoid accidental nasty words\n",
 	      stderr);
+	fputs("  -P or --insecure-phonemes\n", stderr);
+	fputs("\tMake words that an english speaker could pronounce, at the expense of security\n",
+	      stderr);
+	fputs("  -L or --no-lowers\n", stderr);
+	fputs("\tNo lower-case characters\n",
+	      stderr);
 	exit(1);
 }
 
@@ -94,12 +102,12 @@ int main(int argc, char **argv)
 	char	*buf, *tmp;
 	void	(*pwgen)(char *inbuf, int size, int pw_flags);
 
-	pwgen = pw_phonemes;
+	pwgen = pw_rand;
 	pw_number = pw_random_number;
 	if (isatty(1)) {
 		do_columns = 1;
-		pwgen_flags |= PW_DIGITS | PW_UPPERS;
 	}
+	pwgen_flags = PW_DIGITS | PW_UPPERS | PW_LOWERS;
 
 	while (1) {
 #ifdef HAVE_GETOPT_LONG
@@ -116,6 +124,9 @@ int main(int argc, char **argv)
 		case 'A':
 			pwgen_flags &= ~PW_UPPERS;
 			break;
+		case 'L':
+			pwgen_flags &= ~PW_LOWERS;
+			break;
 		case 'a':
 			break;
 		case 'B':
@@ -126,6 +137,9 @@ int main(int argc, char **argv)
 			break;
 		case 'n':
 			pwgen_flags |= PW_DIGITS;
+			break;
+		case 'P':
+			pwgen = pw_phonemes;
 			break;
 		case 'N':
 			num_pw = strtol(optarg, &tmp, 0);
@@ -138,7 +152,7 @@ int main(int argc, char **argv)
 			break;
 		case 's':
 			pwgen = pw_rand;
-			pwgen_flags |= PW_DIGITS | PW_UPPERS;
+			pwgen_flags |= PW_DIGITS | PW_UPPERS | PW_LOWERS;
 			break;
 		case 'C':
 			do_columns = 1;

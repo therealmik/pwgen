@@ -32,9 +32,15 @@ void pw_rand(char *buf, int size, int pw_flags)
 	if (pw_flags & PW_UPPERS) {
 		len += strlen(pw_uppers);
 	}
-	len += strlen(pw_lowers);
+	if (pw_flags & PW_LOWERS) {
+		len += strlen(pw_lowers);
+	}
 	if (pw_flags & PW_SYMBOLS) {
 		len += strlen(pw_symbols);
+	}
+	if (len < 1) {
+		fprintf(stderr, "No possible password characters.\n");
+		exit(1);
 	}
         chars = malloc(len+1);
         if (!chars) {
@@ -50,8 +56,10 @@ void pw_rand(char *buf, int size, int pw_flags)
 		strcpy(wchars, pw_uppers);
 		wchars += strlen(pw_uppers);
 	}
-	strcpy(wchars, pw_lowers);
-	wchars += strlen(pw_lowers);
+	if (pw_flags & PW_LOWERS) {
+		strcpy(wchars, pw_lowers);
+		wchars += strlen(pw_lowers);
+	}
 	if (pw_flags & PW_SYMBOLS) {
 		strcpy(wchars, pw_symbols);
 	}
@@ -70,10 +78,12 @@ try_again:
 			feature_flags &= ~PW_DIGITS;
 		if (strchr(pw_uppers, ch))
 			feature_flags &= ~PW_UPPERS;
+		if (strchr(pw_lowers, ch))
+			feature_flags &= ~PW_LOWERS;
 		if (strchr(pw_symbols, ch))
 			feature_flags &= ~PW_SYMBOLS;
 	}
-	if (feature_flags & (PW_UPPERS | PW_DIGITS | PW_SYMBOLS))
+	if (feature_flags & (PW_UPPERS | PW_DIGITS | PW_SYMBOLS | PW_LOWERS))
 		goto try_again;
 	buf[size] = 0;
 	free(chars);
