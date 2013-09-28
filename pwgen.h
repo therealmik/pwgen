@@ -50,6 +50,8 @@ extern long double get_probability(void);
 extern int get_num_rand_steps(void);
 extern int get_rand_step(int num);
 extern int pw_random_event(int x, int in_a);
+extern void rejected_path(void);
+
 
 /* sha1num.c */
 extern void pw_sha1_init(char *sha1);

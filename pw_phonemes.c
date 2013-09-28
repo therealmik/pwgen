@@ -79,24 +79,35 @@ try_again:
 		len = strlen(str);
 		flags = elements[i].flags;
 		/* Filter on the basic type of the next element */
-		if ((flags & should_be) == 0)
+		if ((flags & should_be) == 0) {
+			rejected_path();
 			continue;
+		}
 		/* Handle the NOT_FIRST flag */
-		if (first && (flags & NOT_FIRST))
+		if (first && (flags & NOT_FIRST)) {
+			rejected_path();
 			continue;
+		}
+
 		/* Don't allow VOWEL followed a Vowel/Dipthong pair */
 		if ((prev & VOWEL) && (flags & VOWEL) &&
-		    (flags & DIPTHONG))
+		    (flags & DIPTHONG)) {
+			rejected_path();
 			continue;
+		}
 		/* Don't allow us to overflow the buffer */
-		if (len > size-c)
+		if (len > size-c) {
+			rejected_path();
 			continue;
+		}
 
 		/* Handle the AMBIGUOUS flag */
 		if (pw_flags & PW_AMBIGUOUS) {
 			cp = strpbrk(str, pw_ambiguous);
-			if (cp)
+			if (cp) {
+				rejected_path();
 				continue;
+			}
 		}
 
 		/*

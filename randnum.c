@@ -56,19 +56,23 @@ static int get_random_fd()
 }
 
 
-static long double probability;
+static long double probabilities[65536];
 static int num_rand_steps;
 static int rand_path[65536];
 
 extern void new_password(void)
 {
-	probability = 1.0;
 	num_rand_steps = 0;
 }
 
 extern long double get_probability(void)
 {
-	return probability;
+	long double p = 1.0;
+	int i;
+	for(i = 0; i < num_rand_steps; i++) {
+		p *= probabilities[i];
+	}
+	return p;
 }
 
 extern int get_num_rand_steps(void)
@@ -81,6 +85,11 @@ extern int get_rand_step(int num)
 	assert(num >= 0);
 	assert(num < num_rand_steps);
 	return rand_path[num];
+}
+
+extern void rejected_path(void)
+{
+	num_rand_steps--;
 }
 
 /*
@@ -126,7 +135,7 @@ static int _pw_random_number(max_num)
 int pw_random_number(max_num)
 {
 	int ret = _pw_random_number(max_num);
-	probability *= 1.0 / (max_num+1);
+	probabilities[num_rand_steps] = 1.0 / (max_num+1);
 	rand_path[num_rand_steps++] = ret;
 	return ret;
 }
@@ -134,10 +143,10 @@ int pw_random_number(max_num)
 int pw_random_event(int x, int in_a)
 {
 	int ret = _pw_random_number(in_a) < x;
-	rand_path[num_rand_steps++] = ret;
 	if(ret)
-		probability *= (long double)x / (long double)in_a;
+		probabilities[num_rand_steps] = (long double)x / (long double)in_a;
 	else
-		probability *= (long double)(in_a - x) / (long double)in_a;
+		probabilities[num_rand_steps] = (long double)(in_a - x) / (long double)in_a;
+	rand_path[num_rand_steps++] = ret;
 	return ret;
 }
