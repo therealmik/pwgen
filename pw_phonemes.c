@@ -107,10 +107,11 @@ try_again:
 
 		/* Handle PW_UPPERS */
 		if (pw_flags & PW_UPPERS) {
-			if ((first || flags & CONSONANT) &&
-			    (pw_number(10) < 2)) {
-				buf[c] = toupper(buf[c]);
-				feature_flags &= ~PW_UPPERS;
+			if (first || flags & CONSONANT) {
+				if(pw_random_event(2, 10)) {
+					buf[c] = toupper(buf[c]);
+					feature_flags &= ~PW_UPPERS;
+				}
 			}
 		}
 		
@@ -123,8 +124,8 @@ try_again:
 		/*
 		 * Handle PW_DIGITS
 		 */
-		if (pw_flags & PW_DIGITS) {
-			if (!first && (pw_number(10) < 3)) {
+		if (pw_flags & PW_DIGITS && !first) {
+			if (pw_random_event(3, 10)) {
 				do {
 					ch = pw_number(10)+'0';
 				} while ((pw_flags & PW_AMBIGUOUS) 
@@ -142,8 +143,8 @@ try_again:
 		}
 				
 		/* Handle PW_SYMBOLS */
-		if (pw_flags & PW_SYMBOLS) {
-			if (!first && (pw_number(10) < 2)) {
+		if (pw_flags & PW_SYMBOLS && !first) {
+			if (pw_random_event(2, 10)) {
 				do {
 					ch = pw_symbols[
 						pw_number(strlen(pw_symbols))];
@@ -161,9 +162,9 @@ try_again:
 		if (should_be == CONSONANT) {
 			should_be = VOWEL;
 		} else { /* should_be == VOWEL */
-			if ((prev & VOWEL) ||
-			    (flags & DIPTHONG) ||
-			    (pw_number(10) > 3))
+			if ((prev & VOWEL) || (flags & DIPTHONG))
+				should_be = CONSONANT;
+			else if(pw_random_event(6, 10))
 				should_be = CONSONANT;
 			else
 				should_be = VOWEL;

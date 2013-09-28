@@ -87,16 +87,13 @@ extern int get_rand_step(int num)
  * Generate a random number n, where 0 <= n < max_num, using
  * /dev/urandom if possible.
  */
-int pw_random_number(max_num)
+static int _pw_random_number(max_num)
 	int max_num;
 {
 	int i, fd = get_random_fd();
 	int lose_counter = 0, nbytes=4;
 	unsigned int rand_num;
 	char *cp = (char *) &rand_num;
-	int ret;
-
-	probability *= 1.0 / (max_num+1);
 
 	if (fd >= 0) {
 		while (nbytes > 0) {
@@ -114,19 +111,33 @@ int pw_random_number(max_num)
 			lose_counter = 0;
 		}
 	}
-	if (nbytes == 0) {
-		ret = (rand_num % max_num);
-		rand_path[num_rand_steps++] = ret;
-		return ret;
-	}
+	if (nbytes == 0)
+		return (rand_num % max_num);
 
 	/* OK, we weren't able to use /dev/random, fall back to rand/rand48 */
 
 #ifdef HAVE_DRAND48
-	ret = ((int) ((drand48() * max_num)));
+	return ((int) ((drand48() * max_num)));
 #else
-	ret = ((int) (random() / ((float) RAND_MAX) * max_num));
+	return ((int) (random() / ((float) RAND_MAX) * max_num));
 #endif
+}
+
+int pw_random_number(max_num)
+{
+	int ret = _pw_random_number(max_num);
+	probability *= 1.0 / (max_num+1);
 	rand_path[num_rand_steps++] = ret;
+	return ret;
+}
+
+int pw_random_event(int x, int in_a)
+{
+	int ret = _pw_random_number(in_a) < x;
+	rand_path[num_rand_steps++] = ret;
+	if(ret)
+		probability *= (long double)x / (long double)in_a;
+	else
+		probability *= (long double)(in_a - x) / (long double)in_a;
 	return ret;
 }
