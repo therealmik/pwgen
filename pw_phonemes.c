@@ -137,18 +137,20 @@ try_again:
 		 */
 		if (pw_flags & PW_DIGITS && !first) {
 			if (pw_random_event(3, 10)) {
-				do {
+				ch = pw_number(10)+'0';
+				while ((pw_flags & PW_AMBIGUOUS) && strchr(pw_ambiguous, ch)) {
+					rejected_path();
 					ch = pw_number(10)+'0';
-				} while ((pw_flags & PW_AMBIGUOUS) 
-					 && strchr(pw_ambiguous, ch));
+				}
+					 
 				buf[c++] = ch;
 				buf[c] = 0;
 				feature_flags &= ~PW_DIGITS;
 				
 				first = 1;
 				prev = 0;
-				should_be = pw_number(2) ?
-					VOWEL : CONSONANT;
+				if(c < size)
+					should_be = pw_number(2) ? VOWEL : CONSONANT;
 				continue;
 			}
 		}
@@ -156,11 +158,12 @@ try_again:
 		/* Handle PW_SYMBOLS */
 		if (pw_flags & PW_SYMBOLS && !first) {
 			if (pw_random_event(2, 10)) {
-				do {
-					ch = pw_symbols[
-						pw_number(strlen(pw_symbols))];
-				} while ((pw_flags & PW_AMBIGUOUS) 
-					&& strchr(pw_ambiguous, ch));
+				ch = pw_symbols[pw_number(strlen(pw_symbols))];
+				while ((pw_flags & PW_AMBIGUOUS) && strchr(pw_ambiguous, ch)) {
+					rejected_path();
+					ch = pw_symbols[pw_number(strlen(pw_symbols))];
+				}
+
 				buf[c++] = ch;
 				buf[c] = 0;
 				feature_flags &= ~PW_SYMBOLS;
@@ -175,10 +178,12 @@ try_again:
 		} else { /* should_be == VOWEL */
 			if ((prev & VOWEL) || (flags & DIPTHONG))
 				should_be = CONSONANT;
-			else if(pw_random_event(6, 10))
-				should_be = CONSONANT;
-			else
-				should_be = VOWEL;
+			else if(c < size) {
+				if(pw_random_event(6, 10))
+					should_be = CONSONANT;
+				else
+					should_be = VOWEL;
+			}
 		}
 		prev = flags;
 		first = 0;
