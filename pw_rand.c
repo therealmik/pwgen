@@ -83,9 +83,12 @@ try_again:
 		if (strchr(pw_symbols, ch))
 			feature_flags &= ~PW_SYMBOLS;
 	}
-	if (feature_flags & (PW_UPPERS | PW_DIGITS | PW_SYMBOLS | PW_LOWERS))
+	
+	if ( !(pw_flags & PW_NO_RULES)
+		&& feature_flags & (PW_UPPERS | PW_DIGITS | PW_SYMBOLS | PW_LOWERS))
 		goto try_again;
 	buf[size] = 0;
 	free(chars);
 	return;
-}	
+}
+

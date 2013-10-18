@@ -44,11 +44,12 @@ struct option pwgen_options[] = {
 	{ "no-vowels", no_argument, 0, 'v' },
 	{ "insecure-phonemes", no_argument, 0, 'P' },
 	{ "no-lowers", no_argument, 0, 'L' },
+	{ "no-rules", no_argument, 0, 'R' },
 	{ 0, 0, 0, 0}
 };
 #endif
 
-const char *pw_options = "01AaBCcnN:shH:vyPL";
+const char *pw_options = "01AaBCcnN:shH:vyPLR";
 
 static void usage(void)
 {
@@ -89,6 +90,9 @@ static void usage(void)
 	      stderr);
 	fputs("  -L or --no-lowers\n", stderr);
 	fputs("\tNo lower-case characters\n",
+	      stderr);
+	fputs("  -R or --no-rules\n", stderr);
+	fputs("\tDon't require at-least one of each class\n",
 	      stderr);
 	exit(1);
 }
@@ -170,6 +174,9 @@ int main(int argc, char **argv)
 		case 'v':
 			pwgen = pw_rand;
 			pwgen_flags |= PW_NO_VOWELS | PW_DIGITS | PW_UPPERS;
+			break;
+		case 'R':
+			pwgen_flags |= PW_NO_RULES;
 			break;
 		case 'h':
 		case '?':

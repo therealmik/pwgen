@@ -30,6 +30,8 @@ struct pw_element {
 #define PW_NO_VOWELS	0x0010
 #define PW_LOWERS	0x0020
 
+#define PW_NO_RULES	0x0040
+
 /* pointer to choose between random or sha1 pseudo random number generator */
 extern int (*pw_number)(int max_num);
 

@@ -171,6 +171,7 @@ try_again:
 		prev = flags;
 		first = 0;
 	}
-	if (feature_flags & (PW_UPPERS | PW_DIGITS | PW_SYMBOLS))
+	if ( !(pw_flags & PW_NO_RULES)
+		&& feature_flags & (PW_UPPERS | PW_DIGITS | PW_SYMBOLS))
 		goto try_again;
 }
