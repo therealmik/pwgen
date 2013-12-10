@@ -11,7 +11,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "pwgen.h"
+#ifdef SHA_INTERNAL
 #include "sha1.h"
+#endif
+#ifdef SHA_SOLARIS
+#include <sha1.h>
+#define sha1_context SHA1_CTX
+#define sha1_starts SHA1Init
+#define sha1_update SHA1Update
+#define sha1_finish(a,b) SHA1Final(b,a)
+#endif
 
 sha1_context sha1_ctx;
 char *sha1_seed;
@@ -53,6 +62,8 @@ void pw_sha1_init(char *sha1)
 	while( ( i = fread( buf, 1, sizeof( buf ), f ) ) > 0 ) {
 		sha1_update( &sha1_ctx, buf, i );
 	}
+
+	fclose(f);
 
 	return;
 }
