@@ -8,4 +8,23 @@ AC_PATH_PROG(SED, sed, sed)
 AC_PATH_PROG(PERL, perl, perl)
 AC_CHECK_FUNCS(drand48 getopt_long)
 AC_CHECK_HEADERS(getopt.h)
+pwgen_sha="internal"
+SHA_OBJ=""
+SHA_SRC=""
+SHA_LIB=""
+SHA_HEAD=""
+AC_CHECK_LIB(md, SHA1Init, [pwgen_sha="solaris"])
+if test x"$pwgen_sha" = x"internal" ; then
+	CFLAGS="${CFLAGS} -DSHA_INTERNAL"
+	SHA_OBJ="sha1.o"
+	SHA_SRC="sha1.c"
+	SHA_HEAD="sha1.h"
+elif test x"$pwgen_sha" = x"solaris" ; then
+	SHA_LIB="-lmd"
+	CFLAGS="${CFLAGS} -DSHA_SOLARIS"
+fi
+AC_SUBST(SHA_OBJ)
+AC_SUBST(SHA_SRC)
+AC_SUBST(SHA_LIB)
+AC_SUBST(SHA_HEAD)
 AC_OUTPUT(Makefile)
